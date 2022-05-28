@@ -1,0 +1,251 @@
+SELECT   
+   {[Measures].[Число Cheque]} ON COLUMNS,  
+   non empty [Cars].[Mark].Members ON ROWS  
+FROM  
+   [Autorepair DW]  
+WHERE  
+   {[Date Partition].[Year].[2001]};
+
+
+SELECT   
+   {[Measures].[Число Cheque]} ON COLUMNS,  
+		[Cars].[Mark].Members ON ROWS  
+FROM  
+   [Autorepair DW]  
+WHERE  
+   {[Date Partition].[Year].[2001]};
+
+
+-- Parent возвращает родительский элемент заданного элемента 
+-- (в следующем запросе выводится информация за 2020 год 1-го квартала)
+SELECT [Measures].[Число Cheque] on ROWS,
+{[Date Partition].[Иерархия].[Day].&[8]&[2000]&[1].Parent} on COLUMNS
+FROM [Autorepair DW];
+
+-- Children возвращает набор потомков указанного элемента
+SELECT [Measures].[Число Cheque] on ROWS,
+{[Date Partition].[Иерархия].[2000].Children} on COLUMNS
+FROM [Autorepair DW];
+
+-- FirstChild возвращает первого потомка заданного элемента
+-- LastChild возвращает последнего потомка заданного элемента
+SELECT [Measures].[Число Cheque] on ROWS,
+{ [Date Partition].[Иерархия].[2000].[4].FirstChild,
+  [Date Partition].[Иерархия].[2000].[4].LastChild } on COLUMNS
+FROM [Autorepair DW];
+
+
+-- Ancestor - функция, возвращающая предок заданного элемента
+-- на заданном уровне или заданном расстоянии от элемента
+SELECT [Measures].[Purchase Amount] on ROWS,
+{Ancestor( [Date Partition].[Иерархия].[Day].&[15]&[2000]&[1]
+		 , [Date Partition].[Иерархия].[Day])} on COLUMNS
+FROM [Autorepair DW];
+
+-- Descendants возвращает набор потомков элемента на указанном уровне
+-- или расстоянии, по желанию включая или исключая потомков на других уровнях
+SELECT [Measures].[Purchase Amount] on COLUMNS,
+{Descendants( [Date Partition].[Иерархия].[Year].&[2000]
+            , [Date Partition].[Иерархия].[Month].[3] )} on ROWS
+FROM [Autorepair DW];
+
+
+-- Siblings возвращает элементы, имеющие общего родителя с указанным 
+-- элементом, включая сам элемент
+SELECT [Measures].[Purchase Amount] on ROWS,
+{[Date Partition].[Иерархия].[Year].[2000].[1].Siblings} on COLUMNS
+FROM [Autorepair DW];
+
+-- FIRSTSIBLING возвращает первого потомка предка заданного элемента
+-- LASTSIBLING возвращает последнего потомка предка заданного элемента
+SELECT [Measures].[Purchase Amount] on ROWS,
+{ [Date Partition].[Иерархия].[Year].[2000].[1].FIRSTSIBLING
+, [Date Partition].[Иерархия].[Year].[2000].[1].LASTSIBLING } on COLUMNS
+FROM [Autorepair DW];
+
+-- Lag обеспечивает доступ к строке с заданным физическим смещением перед началом текущей строки
+-- NextMember возвращает следующий элемент уровня, содержащего указанный элемент
+-- PrevMember возвращает предыдущий элемент уровня, содержащего указанный элемент
+-- Lead обеспечивает доступ к строке на заданном физическом смещении после текущей строки
+SELECT [Measures].[Число Cheque] on ROWS,
+{[Date Partition].[Иерархия].[Year].[2000].Lag(2)
+, [Date Partition].[Иерархия].[Year].[2000].PrevMember
+, [Date Partition].[Иерархия].[Year].[2000]
+, [Date Partition].[Иерархия].[Year].[2000].NextMember
+, [Date Partition].[Иерархия].[Year].[2000].Lead(2)} on COLUMNS
+FROM [Autorepair DW];
+
+-- Cousin возвращает дочерний элемент, позиция которого относительно родительского 
+-- элемента совпадает с позицией заданного дочернего элемента.
+SELECT [Measures].[Purchase Amount] on ROWS,
+{ [Date Partition].[Иерархия].[Year].&[2000]
+, Cousin( [Date Partition].[Иерархия].[Year].&[2000]
+        , [Date Partition].[Иерархия].[Year].&[2001]
+		) 
+} on COLUMNS
+FROM [Autorepair DW];
+
+-- Ascendants возвращает набор родителей указанного элемента, включая его самого
+SELECT [Measures].[Purchase Amount] on ROWS,
+{Ascendants([Date Partition].[Иерархия].[Day].&[27]&[2000]&[1])} on COLUMNS
+FROM [Autorepair DW];
+
+-- ParallelPeriod возвращает элемент предыдущего периода, расположенный в той 
+-- же относительной позиции, что и заданный элемент
+-- (в следующем запросе выводится информация за 12.01.2020, а была задана дата
+-- 11.10.2020)
+SELECT [Measures].[Число Cheque] on ROWS,
+{ParallelPeriod([Date Partition].[Иерархия].[Day]
+	, 3
+	, [Date Partition].[Иерархия].[Day].&[31]&[2000]&[1])} on COLUMNS
+FROM [Autorepair DW];
+
+-- OpeningPeriod возвращает первый элемент с общим родителем из потомков 
+-- заданного уровня, необязательно заданного элемента
+-- ClosingPeriod возвращает последний элемент среди потомков
+-- указанного элемента на указанном уровне
+SELECT [Measures].[Число Cheque] on ROWS,
+{ OpeningPeriod( [Date Partition].[Иерархия].[Month]
+			   , [Date Partition].[Иерархия].[Year].&[2007])
+, ClosingPeriod( [Date Partition].[Иерархия].[Month]
+			   , [Date Partition].[Иерархия].[Year].&[2007])
+} on COLUMNS
+FROM [Autorepair DW];
+
+--LastPeriods возвращает набор элементов до указанного элемента включительно 
+SELECT [Measures].[Число Cheque] on ROWS,
+{LastPeriods(6, [Date Partition].[Иерархия].[Year].&[2006])} on COLUMNS
+FROM [Autorepair DW];
+
+
+-- PeriodsToDate возвращает набор элементов с общим родителем, находящихся 
+-- на том же уровне, что и данный элемент, начиная с первого такого элемента 
+-- и заканчивая данным элементом, в соответствии с ограничениями заданного 
+-- уровня в измерении Time.
+-- (в следующем запросе выводится информация от 01.01.2020 до 01.03.2020)
+SELECT [Measures].[Purchase Amount] on COLUMNS,
+PeriodsToDate( [Date Partition].[Иерархия].[Year]
+			 , [Date Partition].[Иерархия].[Day].&[19]&[2000]&[1]) on ROWS
+FROM [Autorepair DW];
+
+-- YTD возвращает набор элементов с общим родителем, находящиеся на том же уровне,
+-- что и заданный элемент, начиная с первого элемента того же уровня и заканчивая
+-- данным элементом, в соответствии с ограничением на уровень года в измерении Time
+SELECT [Measures].[Purchase Amount] on COLUMNS,
+{YTD([Date Partition].[Иерархия].[Day].&[13]&[2000]&[1])} on ROWS
+FROM [Autorepair DW];
+
+
+-- MTD возвращает набор элементов с общим родителем, находящихся на том же уровне, 
+-- что и данный элемент, начиная с первого такого элемента и заканчивая данным элементом, 
+-- в соответствии с ограничениями уровня Year в измерении Time
+SELECT [Measures].[Purchase Amount] on COLUMNS,
+{MTD([Date Partition].[Иерархия].[Day].&[28]&[2000]&[10])} on ROWS
+FROM [Autorepair DW];
+
+---------------------------------------------------------------------------------------------------
+
+-- Head возвращает указанное количество первых элементов набора, сохраняя повторяющиеся элементы
+-- Сортировка с помощью BDESC в неирархическом порядке по убыванию РАБОТАЕТ
+SELECT   
+[Measures].[Число Cheque] ON 0,  
+Head  
+   (Order   
+      ( [Date Partition].[Иерархия].[Year].members  
+      , [Measures].[Число Cheque]  
+      , BDESC  
+      )  
+   , 10  
+   ) ON 1  
+FROM [Autorepair DW];
+
+-- Tail возвращает подмножество из конца набора
+-- Сортировка с помощью BASC в неирархическом порядке по возрастанию НЕ РАБОТАЕТ
+SELECT   
+[Measures].[Purchase Amount] ON 0,  
+(Tail  
+   (Order   
+      ( [Geography].[Иерархия].[City].members  
+      , [Measures].[Purchase Amount]  
+      , BASC  
+      )  
+   , 5  
+   ), Head(Order([Date Partition].[Иерархия].[Year].Members, [Measures].[Purchase Amount], BASC), 3)) ON 1  
+FROM [Autorepair DW];
+
+-- Union возвращает набор, порожденный объединением двух наборов, по желанию сохраняя повторяющиеся элементы
+SELECT Union   
+   ([Date Partition].[Иерархия].[Year].[2000].children  
+   , {[Date Partition].[Иерархия].[Year].[2000]}  
+   , {[Date Partition].[Иерархия].[Year].[2001]}  
+   ) ON 0,
+   [Measures].[Число Cheque]  ON 1  
+FROM [Autorepair DW];
+
+-- INTERSECT и кортеж, вложенный в перечисление
+-- INTERSECT возвращает пересечение двух входных наборов, при необходимости сохраняя
+-- повторяющиеся элементы
+SELECT INTERSECT  
+   ({([Date Partition].[Иерархия].[Year].&[2010], [Cars].[Mark].Members)}  
+   , {(LastPeriods(4, [Date Partition].[Иерархия].[Year].&[2010]), [Cars].[Mark].Members)}  
+   ) ON 1,
+   [Measures].[Purchase Amount] ON 0
+FROM [Autorepair DW];
+
+-- EXCEPT обрабатывает два набора и удаляет кортежи из первого набора, существующие во втором 
+-- наборе, сохраняя при необходимости одинаковые элементы
+SELECT EXCEPT 
+   ({LastPeriods(4,[Date Partition].[Иерархия].[Year].&[2010])} 
+   , {[Date Partition].[Иерархия].[Year].&[2012]} 
+   ) ON 0,
+    [Measures].[Purchase Amount] ON 1  
+FROM [Autorepair DW];
+
+-- TOPCOUNT сортирует набор по убыванию и возвращает заданное число элементов с самыми высокими значениями
+SELECT {[Measures].[Purchase Amount], [Measures].[Число Cheque]} ON 0,
+TOPCOUNT([Date Partition].[Иерархия].[Year].MEMBERS, 18, [Measures].[Число Cheque])
+ON 1
+FROM [Autorepair DW];
+
+-- BOTTOMCOUNT сортирует набор в порядке возрастания и возвращает указанное число кортежей
+-- набора с минимальными значениями 
+SELECT {[Measures].[Purchase Amount], [Measures].[Число Cheque]} ON 0,
+BOTTOMCOUNT([Date Partition].[Иерархия].[Year].MEMBERS, 10, [Measures].[Число Cheque])
+ON 1
+FROM [Autorepair DW];
+
+-- Filter возвращает набор, получающийся в результате фильтрации заданного набора на
+-- основе условия поиска.
+SELECT [Date Partition].[Иерархия].[Year].Members ON 1, 
+       [Cars].[Mark].Members ON 0
+FROM(
+	SELECT
+        Filter (
+            (
+                [Date Partition].[Иерархия].[Year].Members, 
+                [Cars].[Mark].Members
+            ),
+            [Measures].[Purchase Amount] > 1000
+        ) ON 0
+	FROM [Autorepair DW]
+);
+
+-- With 
+WITH   
+   MEMBER [Measures].[Purchase Amount in dollars] AS  
+   ROUND([Measures].[Purchase Amount] * 0.016, 2)
+SELECT   
+   [Measures].[Purchase Amount in dollars] on 0,  
+   NON EMPTY [Date Partition].[Иерархия].[Year].MEMBERS on 1  
+FROM [Autorepair DW]
+WHERE [Cars].[Mark].&[NISSAN];
+
+-- CURRENTMEMBER возвращает текущий элемент указанной иерархии во время итерации
+WITH   
+MEMBER Measures.[Выручка за предудущий год] AS  
+([Measures].[Purchase Amount], [Date Partition].[Иерархия].CURRENTMEMBER.PrevMember)
+SELECT   
+   {[Measures].[Purchase Amount],  
+    [Measures].[Выручка за предудущий год]} ON 0,  
+{[Date Partition].[Year].Members} ON 1  
+FROM [Autorepair DW];

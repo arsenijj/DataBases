@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <row>
+    <id>0</id>
+    <name>бюджет</name>
+  </row>
+  <row>
+    <id>1</id>
+    <name>средний</name>
+  </row>
+  <row>
+    <id>2</id>
+    <name>премиум</name>
+  </row>
+  <row>
+    <id>3</id>
+    <name>спорт</name>
+  </row>
+  <row>
+    <id>4</id>
+    <name>супер-спорт</name>
+  </row>
+</root>
